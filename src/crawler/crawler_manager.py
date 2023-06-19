@@ -2,6 +2,7 @@ from crawler.base_crawler import BaseCrawler
 from crawler.url_extractor import URLExtractor
 from storage.base_storage import BaseStorage
 from utils.utils import generate_filename
+import concurrent.futures
 
 
 class CrawlerManager:
@@ -14,6 +15,7 @@ class CrawlerManager:
         storage: BaseStorage,
         crawler: BaseCrawler,
         url_extractor: URLExtractor,
+        multithreading: bool = False,
     ) -> None:
         self.base_url = base_url
         self.max_urls = max_urls
@@ -24,6 +26,7 @@ class CrawlerManager:
         self.url_extractor = url_extractor
         self.visited_urls = set()
         self.visited_urls.add(base_url)
+        self.multithreading = multithreading
 
     def crawl(self, url: str, current_depth: int, max_depth: int) -> None:
         if current_depth > max_depth:
@@ -45,10 +48,17 @@ class CrawlerManager:
                 ]
                 self.visited_urls.update(extracted_urls)
 
-            for extracted_url in extracted_urls:
-                self.crawl(extracted_url, current_depth + 1, max_depth)
+            if self.multithreading:
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    for extracted_url in extracted_urls:
+                        executor.submit(
+                            self.crawl, extracted_url, current_depth + 1, max_depth
+                        )
+            else:
+                for extracted_url in extracted_urls:
+                    self.crawl(extracted_url, current_depth + 1, max_depth)
         except Exception as exp:
-            print(f"An error occurred while crawling {url}: {exp}")
+            print(f"An error occurred while crawling url: {url}, error: {exp}")
 
     def start(self) -> None:
         self.storage.set_up_folders(self.depth)

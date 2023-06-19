@@ -20,6 +20,7 @@ def main():
         storage,
         crawler,
         url_extractor,
+        multithreading=True,
     )
     print(
         f"Start crawling with base url: {base_url}, max_urls: {max_urls}, depth: {depth}"
