@@ -1,5 +1,4 @@
 import unittest
-
 from crawler.html_crawler import HTMLCrawler
 from crawler.url_extractor import URLExtractor
 

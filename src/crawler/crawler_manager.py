@@ -1,21 +1,19 @@
-import os
-from crawler.html_crawler import HTMLCrawler
+from crawler.base_crawler import BaseCrawler
 from crawler.url_extractor import URLExtractor
-from crawler.web_crawler import WebCrawler
-from storage.file_storage import FileStorage
+from storage.base_storage import BaseStorage
 from utils.utils import generate_filename
 
 
 class CrawlerManager:
     def __init__(
         self,
-        base_url,
-        max_urls,
-        depth,
-        cross_level_uniqueness,
-        storage,
-        crawler,
-        url_extractor,
+        base_url: str,
+        max_urls: int,
+        depth: int,
+        cross_level_uniqueness: bool,
+        storage: BaseStorage,
+        crawler: BaseCrawler,
+        url_extractor: URLExtractor,
     ) -> None:
         self.base_url = base_url
         self.max_urls = max_urls
@@ -24,9 +22,10 @@ class CrawlerManager:
         self.crawler = crawler
         self.storage = storage
         self.url_extractor = url_extractor
-        self.visited_urls = []
+        self.visited_urls = set()
+        self.visited_urls.add(base_url)
 
-    def crawl(self, url, current_depth, max_depth):
+    def crawl(self, url: str, current_depth: int, max_depth: int) -> None:
         if current_depth > max_depth:
             return
 
@@ -35,7 +34,9 @@ class CrawlerManager:
             filename_to_save = generate_filename(url, current_depth)
             self.storage.save(html_content, filename_to_save)
             extracted_urls = self.url_extractor.extract_urls(
-                html_content, self.max_urls
+                html_content,
+                self.max_urls,
+                visited_urls=self.visited_urls if self.cross_level_uniqueness else [],
             )
 
             if self.cross_level_uniqueness:
@@ -49,9 +50,6 @@ class CrawlerManager:
         except Exception as exp:
             print(f"An error occurred while crawling {url}: {exp}")
 
-    def execute_crawl(self):
-        for i in range(self.depth + 1):
-            os.makedirs(str(i), exist_ok=True)
-
-        # Start crawling
+    def start(self) -> None:
+        self.storage.set_up_folders(self.depth)
         self.crawl(self.base_url, 0, self.depth)

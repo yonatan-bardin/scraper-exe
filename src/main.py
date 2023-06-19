@@ -1,23 +1,31 @@
-# import unittest
-
-# from crawler.html_crawler import HTMLCrawler
-# from crawler.url_extractor import URLExtractor
-
-
-# class TestCrawler(unittest.TestCase):
-#     def test_html_crawler(self):
-#         crawler = HTMLCrawler()
-#         content = crawler.fetch("https://example.com")
-#         self.assertIn("Example Domain", content)
-
-#     def test_url_extractor(self):
-#         html_content = """<a href="https://test1.com">Test1</a><a href="https://test2.com">Test2</a>"""
-#         url_extractor = URLExtractor()
-#         urls = url_extractor.extract_urls(html_content, 2)
-#         self.assertEqual(len(urls), 2)
-#         self.assertEqual(urls[0], "https://test1.com")
-#         self.assertEqual(urls[1], "https://test2.com")
+from crawler.crawler_manager import CrawlerManager
+from crawler.html_crawler import HTMLCrawler
+from crawler.url_extractor import URLExtractor
+from storage.file_storage import FileStorage
 
 
-# if __name__ == "__main__":
-#     unittest.main()
+def main():
+    base_url = "https://www.ynetnews.com/"
+    max_urls = 5
+    depth = 2
+    cross_level_uniqueness = True
+    storage = FileStorage()
+    crawler = HTMLCrawler()
+    url_extractor = URLExtractor()
+    manager = CrawlerManager(
+        base_url,
+        max_urls,
+        depth,
+        cross_level_uniqueness,
+        storage,
+        crawler,
+        url_extractor,
+    )
+    print(
+        f"Start crawling with base url: {base_url}, max_urls: {max_urls}, depth: {depth}"
+    )
+    manager.start()
+
+
+if __name__ == "__main__":
+    main()

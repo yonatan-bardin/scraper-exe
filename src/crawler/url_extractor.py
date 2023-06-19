@@ -1,14 +1,16 @@
+import re
 from bs4 import BeautifulSoup
 
 
 class URLExtractor:
-    def extract_urls(self, page_html, max_urls):
+    def extract_urls(self, page_html: str, max_urls: int, visited_urls=[]) -> list:
         soup = BeautifulSoup(page_html, "html.parser")
         urls = []
 
-        for link in soup.find_all("a", href=True):
+        for link in soup.find_all("a", href=re.compile("http")):
             if len(urls) < max_urls:
-                urls.append(link.get("href"))
+                if link.get("href") not in urls + list(visited_urls):
+                    urls.append(link.get("href"))
             else:
                 break
 

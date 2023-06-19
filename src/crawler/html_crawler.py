@@ -1,11 +1,11 @@
 import requests
 from crawler.base_crawler import BaseCrawler
+from config.settings import USER_AGENT
 
 
 class HTMLCrawler(BaseCrawler):
-    def __init__(self) -> None:
-        super().__init__()
-
     def fetch(self, url):
-        response = requests.get(url)
+        headers = {"User-Agent": USER_AGENT}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
         return response.text
